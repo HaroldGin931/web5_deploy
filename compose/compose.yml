@@ -177,12 +177,35 @@ services:
     image: xiangjian/frontend:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#fb307fe5acee22b732182585e24beb623126d1e5"
+      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#8afe75bc7962ee0c4170a214ef5b3e3c7f0d898a"
+      dockerfile_inline: |
+        FROM m.daocloud.io/docker.io/node:22-alpine
+
+        ARG HOST_PROXY
+        ENV HTTP_PROXY=$${HOST_PROXY}
+        ENV HTTPS_PROXY=$${HOST_PROXY}
+        ENV ALL_PROXY=$${HOST_PROXY}
+
+        WORKDIR /app
+        RUN corepack enable
+        COPY package.json pnpm-lock.yaml ./
+        RUN pnpm install --frozen-lockfile
+        COPY . .
+        RUN pnpm build
+
+        # Reuse TanStack's locked HTTP adapter, resolved through its dependency graph.
+        RUN node --input-type=module -e 'import { createRequire } from "node:module"; import { dirname, resolve } from "node:path"; import { symlinkSync } from "node:fs"; const start = createRequire(import.meta.resolve("@tanstack/react-start/package.json")); const core = createRequire(start.resolve("@tanstack/start-plugin-core/package.json")); symlinkSync(resolve(dirname(core.resolve("srvx/cli")), "../bin/srvx.mjs"), "/app/srvx.mjs");'
+
+        ENV HTTP_PROXY=
+        ENV HTTPS_PROXY=
+        ENV ALL_PROXY=
+        ENV NODE_ENV=production
+        EXPOSE 3000
+        CMD ["node", "/app/srvx.mjs", "--prod", "--host", "0.0.0.0", "--port", "3000", "-s", "../client", "dist/server/server.js"]
     environment:
       XIANGJIAN_BACKEND_URL: http://gateway
       # Optional legacy AppView origins, read only by the frontend server.
       XIANGJIAN_APPVIEW_IMAGE_ORIGINS: ${XIANGJIAN_APPVIEW_IMAGE_ORIGINS:-}
-      __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS: ${PUBLIC_HOST:?set deployment public host}
     restart: unless-stopped
 
   gateway:

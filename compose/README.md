@@ -1,5 +1,12 @@
 # 乡建 Demo Compose
 
+## 前端生产构建
+
+前端镜像在构建时执行 `pnpm build`，启动时使用 TanStack 锁定的 srvx 适配器运行
+SSR 和服务端函数，不再运行 Vite 开发服务器。`XIANGJIAN_BACKEND_URL` 仍在启动时配置。
+只有内容哈希命名的 `/assets/` 成功响应长期缓存；HTML 和服务端函数不加长期缓存。
+更新网关配置后先执行 `nginx -t`，通过后热加载；不重建数据服务。
+
 ## 公开地址与图片
 
 `./start.sh <域名或完整 origin>` 按部署目标设置 `PUBLIC_HOST`、`PUBLIC_SCHEME` 和
