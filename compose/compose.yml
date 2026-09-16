@@ -177,7 +177,7 @@ services:
     image: xiangjian/frontend:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#1dc41cbb175ad15261ec2757fc3a15200713fbac"
+      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#c691379beccda549bb71271142b1e171c9cf5a16"
     environment:
       XIANGJIAN_BACKEND_URL: http://gateway
       # Optional legacy AppView origins, read only by the frontend server.
