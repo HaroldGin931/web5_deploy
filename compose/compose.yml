@@ -177,7 +177,7 @@ services:
     image: xiangjian/frontend:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#8afe75bc7962ee0c4170a214ef5b3e3c7f0d898a"
+      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#b52e27c6cadca81efa22d87f57ded47d7850c024"
       dockerfile_inline: |
         FROM m.daocloud.io/docker.io/node:22-alpine
 
