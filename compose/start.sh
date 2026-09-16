@@ -90,6 +90,8 @@ wait_http() {
 
 compose config --quiet
 compose up -d --build --remove-orphans
+# The nginx entrypoint renders templates only when the container starts.
+compose up -d --force-recreate --no-deps gateway
 wait_http "Rice" "http://127.0.0.1:18080/api/apps"
 wait_http "PDS" "http://127.0.0.1:18080/pds/xrpc/com.atproto.server.describeServer"
 
