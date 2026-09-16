@@ -1,6 +1,7 @@
 defmodule XiangjianDemoSeed do
   alias Rice.Accounts
   alias Rice.Accounts.User
+  alias Rice.Community.Node
   alias Rice.Grains
   alias Rice.PDS
   alias Rice.Repo
@@ -33,12 +34,15 @@ defmodule XiangjianDemoSeed do
   ]
 
   def run do
-    if Repo.get_by(User, handle: @alice) do
-      IO.puts("demo data already exists")
-    else
-      seed()
-    end
+    alice =
+      case Repo.get_by(User, handle: @alice) do
+        nil -> seed()
+        alice ->
+          IO.puts("demo data already exists")
+          alice
+      end
 
+    seed_demo_node(alice)
     seed_extra_accounts()
   end
 
@@ -50,7 +54,10 @@ defmodule XiangjianDemoSeed do
     Grains.grant(alice, 500, memo: "Demo 初始稻米") |> ok!("grant Alice")
     Grains.grant(bob, 200, memo: "Demo 初始稻米") |> ok!("grant Bob")
 
+    node = seed_demo_node(alice)
+
     Tasks.create_task(alice, %{
+      node_id: node.id,
       title: "[Demo] 记录村口古树故事",
       description: "访谈一位村民并整理一段口述记录。",
       reward_amount: 80,
@@ -88,6 +95,27 @@ defmodule XiangjianDemoSeed do
     )
 
     IO.puts("demo data is ready")
+    alice
+  end
+
+  defp seed_demo_node(alice) do
+    case Repo.get_by(Node, legacy_id: "demo-wamo-social") do
+      nil ->
+        %Node{}
+        |> Node.changeset(%{
+          legacy_id: "demo-wamo-social",
+          name: "青禾测试社区",
+          description: "demo.wamo.social 内测社区，仅使用测试账号和测试稻米。",
+          user_id: alice.id
+        })
+        |> Repo.insert!()
+
+      %Node{user_id: user_id} = node when user_id == alice.id ->
+        node
+
+      _node ->
+        raise "demo node already belongs to another administrator"
+    end
   end
 
   defp seed_extra_accounts do

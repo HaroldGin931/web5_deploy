@@ -114,7 +114,7 @@ services:
     image: xiangjian/rice:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/rice.git#7b5b57fddeb4cfc9de4d2bca2728574bc625649b"
+      context: "https://github.com/HaroldGin931/rice.git#8d2bdea7fc22d381fe61bdc021fda4e4d2cdae66"
     environment:
       PHX_SERVER: "true"
       PORT: 4000
@@ -128,7 +128,7 @@ services:
       PDS_EMAIL_DOMAIN: pds.uat.test
       PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
       STORAGE_ROOT: /srv/rice/storage
-      OBAN_ENABLED: "false"
+      OBAN_ENABLED: "true"
       ALLOW_UAT_MOCK_SEED: "true"
       MOCK_ACCOUNT_PASSWORD: ${MOCK_ACCOUNT_PASSWORD:?missing compose/.env}
     command: ["/bin/sh", "-c", "/app/bin/migrate && exec /app/bin/server"]
@@ -177,7 +177,7 @@ services:
     image: xiangjian/frontend:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#f91f2da726df40be7e509c302a2525a0e6549322"
+      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#10a798b7c67830922aef83e24eb8631484bb0880"
     environment:
       XIANGJIAN_BACKEND_URL: http://gateway
       __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS: ${PUBLIC_HOST:-demo.wamo.social}
