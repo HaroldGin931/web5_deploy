@@ -25,7 +25,7 @@
 
 ```bash
 git clone --branch demo-wamo-social --single-branch \
-  https://github.com/xjdao2025/web5_deploy.git
+  https://github.com/HaroldGin931/web5_deploy.git
 cd web5_deploy/compose
 ./start.sh demo.wamo.social
 ```
