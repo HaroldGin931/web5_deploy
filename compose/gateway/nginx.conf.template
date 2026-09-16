@@ -43,6 +43,26 @@ http {
       return 308 /post/;
     }
 
+    # Public media and anonymous thread reading share the deployment origin.
+    # Only expose the read paths the frontend actually uses.
+    location /bsky/img/ {
+      limit_except GET HEAD { deny all; }
+      set $appview_upstream appview:3000;
+      rewrite ^/bsky/(.*)$ /$1 break;
+      proxy_pass http://$appview_upstream;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+    }
+
+    location = /bsky/xrpc/app.bsky.feed.getPostThread {
+      limit_except GET HEAD { deny all; }
+      set $appview_upstream appview:3000;
+      rewrite ^/bsky/(.*)$ /$1 break;
+      proxy_pass http://$appview_upstream;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+    }
+
     location /post/ {
       proxy_pass http://post-cache:8080/;
       proxy_set_header Host $host;

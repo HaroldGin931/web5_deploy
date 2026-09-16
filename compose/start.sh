@@ -11,13 +11,21 @@ case "$mode" in
     public_scheme=http
     public_origin=http://localhost:18080
     ;;
-  demo.wamo.social)
-    public_host=demo.wamo.social
-    public_scheme=https
-    public_origin=https://demo.wamo.social
+  http://*|https://*)
+    public_origin=${mode%/}
+    public_scheme=${public_origin%%://*}
+    public_host=${public_origin#*://}
     ;;
   *)
-    echo "usage: ./start.sh localhost|demo.wamo.social" >&2
+    public_host=$mode
+    public_scheme=https
+    public_origin=https://$public_host
+    ;;
+esac
+
+case "$public_host" in
+  ''|*/*|*@*|*\?*|*\#*)
+    echo "usage: ./start.sh localhost|hostname|http(s)://hostname[:port]" >&2
     exit 2
     ;;
 esac

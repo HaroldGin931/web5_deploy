@@ -1,5 +1,17 @@
 # 乡建 Demo Compose
 
+## 公开地址与图片
+
+`./start.sh <域名或完整 origin>` 按部署目标设置 `PUBLIC_HOST`、`PUBLIC_SCHEME` 和
+`PUBLIC_ORIGIN`。浏览器图片使用 `${PUBLIC_ORIGIN}/bsky/img/...`，游客帖子详情使用
+同源 `/bsky/xrpc/app.bsky.feed.getPostThread`；网关仅开放这些 GET/HEAD 读取路径。
+AppView 的内部服务身份用于容器通信，不作为浏览器图片地址。
+
+升级已有部署时，可在服务器 `.env` 的 `XIANGJIAN_APPVIEW_IMAGE_ORIGINS` 中填写升级前
+AppView 输出过的 origin（多个值逗号分隔）。前端服务只改写这些明确配置的旧图片来源，
+不改写外站 CDN；不要把环境域名硬编码到产品代码。新部署不需要该兼容配置。
+更新前备份 Compose 配置和当前镜像，构建固定 Git 提交后仅重建受影响服务，保留数据卷。
+
 这套 Compose 在运行主机上直接从固定 Git 提交构建 Rice 和新版前端，
 不需要上传本地 Docker 镜像。PDS、PLC、AppView 和 Post Cache 使用固定镜像摘要。
 

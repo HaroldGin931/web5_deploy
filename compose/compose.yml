@@ -92,7 +92,7 @@ services:
       BSKY_BSYNC_URL: http://localhost:3002
       BSKY_BSYNC_HTTP_VERSION: "1.1"
       BSKY_DID_PLC_URL: http://plc:3000
-      BSKY_PUBLIC_URL: https://appview.uat.test
+      BSKY_PUBLIC_URL: ${PUBLIC_ORIGIN:?set deployment public origin}/bsky
       BSKY_REPO_PROVIDER: wss://pds.uat.test
       BSKY_SERVER_DID: did:web:appview.uat.test
       BSKY_SERVICE_SIGNING_KEY: ${APPVIEW_SIGNING_KEY:?missing compose/.env}
@@ -114,16 +114,16 @@ services:
     image: xiangjian/rice:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/rice.git#8d2bdea7fc22d381fe61bdc021fda4e4d2cdae66"
+      context: "https://github.com/HaroldGin931/rice.git#5bea160e459ab1ebbd527fb5652cb534eb7a9d4e"
     environment:
       PHX_SERVER: "true"
       PORT: 4000
-      PHX_HOST: ${PUBLIC_HOST:-demo.wamo.social}
+      PHX_HOST: ${PUBLIC_HOST:?set deployment public host}
       DATABASE_URL: ecto://postgres:${POSTGRES_PASSWORD}@postgres/rice
       SECRET_KEY_BASE: ${RICE_SECRET_KEY_BASE:?missing compose/.env}
-      CORS_ORIGINS: ${PUBLIC_ORIGIN:-https://demo.wamo.social}
+      CORS_ORIGINS: ${PUBLIC_ORIGIN:?set deployment public origin}
       PDS_BASE_URL: http://pds:3000
-      PDS_PUBLIC_URL: ${PUBLIC_ORIGIN:-https://demo.wamo.social}/pds
+      PDS_PUBLIC_URL: ${PUBLIC_ORIGIN:?set deployment public origin}/pds
       PDS_HANDLE_DOMAIN: uat.test
       PDS_EMAIL_DOMAIN: pds.uat.test
       PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
@@ -177,16 +177,18 @@ services:
     image: xiangjian/frontend:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#10a798b7c67830922aef83e24eb8631484bb0880"
+      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#1dc41cbb175ad15261ec2757fc3a15200713fbac"
     environment:
       XIANGJIAN_BACKEND_URL: http://gateway
-      __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS: ${PUBLIC_HOST:-demo.wamo.social}
+      # Optional legacy AppView origins, read only by the frontend server.
+      XIANGJIAN_APPVIEW_IMAGE_ORIGINS: ${XIANGJIAN_APPVIEW_IMAGE_ORIGINS:-}
+      __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS: ${PUBLIC_HOST:?set deployment public host}
     restart: unless-stopped
 
   gateway:
     image: m.daocloud.io/docker.io/nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
     environment:
-      PUBLIC_HOST: ${PUBLIC_HOST:-demo.wamo.social}
+      PUBLIC_HOST: ${PUBLIC_HOST:?set deployment public host}
       PUBLIC_SCHEME: ${PUBLIC_SCHEME:-https}
       NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx
       NGINX_ENVSUBST_FILTER: ^(PUBLIC_HOST|PUBLIC_SCHEME)$
