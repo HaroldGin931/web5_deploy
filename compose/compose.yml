@@ -119,7 +119,7 @@ services:
     build:
       context: "https://github.com/HaroldGin931/rice.git#9f04b14c12f509ae46254b723b04b413d5903698"
     env_file:
-      - path: ./auth.env
+      - path: ./.auth
         required: false
     environment:
       PHX_SERVER: "true"
@@ -133,7 +133,7 @@ services:
       PDS_HANDLE_DOMAIN: uat.test
       PDS_EMAIL_DOMAIN: pds.uat.test
       PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
-      # Provider credentials come only from the private auth.env above.
+      # Provider credentials come only from the private .auth above.
       SEMI_REDIRECT_URI: ${PUBLIC_ORIGIN}/callback
       HANDOFF_URL: ${PUBLIC_ORIGIN}/semi-callback
       HANDOFF_ALLOWED_ORIGIN: ${PUBLIC_ORIGIN}

@@ -26,6 +26,8 @@ http {
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       # Authorization codes and handoff tickets must not enter access logs.
       access_log off;
+      proxy_hide_header Cache-Control;
+      proxy_hide_header Referrer-Policy;
       add_header Cache-Control "no-store" always;
       add_header Referrer-Policy "no-referrer" always;
     }

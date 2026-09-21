@@ -1,4 +1,4 @@
 .env
-auth.env
+.auth
 *.swp
 certs/

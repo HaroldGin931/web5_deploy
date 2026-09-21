@@ -105,17 +105,17 @@ Semi 凭据与加密密钥配置齐全后，登录页才显示「使用 Semi 登
 `GET /auth/semi/options` 只返回可用通道、测试模式和 handle 域名，不返回密钥。
 
 短信、Semi、Rice 绑定加密密钥统一填写在服务器
-**`/home/ubuntu/xiangjian-demo/compose/auth.env`**；不再填基础设施的 `.env`。
+**`/home/ubuntu/xiangjian-demo/compose/.auth`**；不再填基础设施的 `.env`。
 Compose 的 Rice 服务直接读取这个文件，不需要给每个密钥再加一条透传。
-新部署先 `cp -n .auth.env.example auth.env`，已有文件直接编辑，不覆盖：
+新部署先 `cp -n .auth.example .auth`，已有文件直接编辑，不覆盖：
 
 ```bash
 cd /home/ubuntu/xiangjian-demo/compose
-nano auth.env
-chmod 600 auth.env
+nano .auth
+chmod 600 .auth
 ```
 
-模板 [.auth.env.example](.auth.env.example) 按短信、Semi、可选邮件分组。
+模板 [.auth.example](.auth.example) 按短信、Semi、可选邮件分组。
 真实文件已被 Git 忽略；值含 `$`、`#`、空格时用英文单引号包裹。不放入前端 `VITE_*` 变量。
 
 - **Semi**：`SEMI_CLIENT_ID`、`SEMI_CLIENT_SECRET` 是 Semi OAuth 应用凭据。
@@ -138,13 +138,13 @@ chmod 600 auth.env
 
 ```bash
 cd /home/ubuntu/xiangjian-demo/compose
-chmod 600 auth.env
+chmod 600 .auth
 export PUBLIC_HOST=demo.wamo.social PUBLIC_SCHEME=https PUBLIC_ORIGIN=https://demo.wamo.social
 docker compose --env-file .env up -d --no-deps rice
 curl --fail --silent https://demo.wamo.social/auth/semi/options
 ```
 
-这里的 `--env-file .env` 只读取部署基础配置；`auth.env` 已由 Compose 自动加载。
+这里的 `--env-file .env` 只读取部署基础配置；`.auth` 已由 Compose 自动加载。
 已恢复历史数据的服务器保留 `.env` 中的 `COMPOSE_FILE`，不要加 `-f compose.yml`。
 
 Mock 边界：后端 `SemiAuthControllerTest` 使用现有 Req.Test 模拟授权服务，Mox 模拟 PDS，
