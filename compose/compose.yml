@@ -117,7 +117,7 @@ services:
     image: xiangjian/rice:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/rice.git#38e81796da8a8085c8367c490b3ea6ae984f817c"
+      context: "https://github.com/HaroldGin931/rice.git#af579f51fc54cc9d947ac8b1a0968c324db68596"
     env_file:
       - path: ./.auth
         required: false
