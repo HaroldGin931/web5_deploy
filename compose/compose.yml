@@ -114,7 +114,7 @@ services:
     image: xiangjian/rice:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/rice.git#782e9086cb2ce9f5e3087e2fa969192be30c4c70"
+      context: "https://github.com/HaroldGin931/rice.git#e82e39370283cb88516ebde62dcc0a94bd8f5594"
     environment:
       PHX_SERVER: "true"
       PORT: 4000
@@ -177,7 +177,7 @@ services:
     image: xiangjian/frontend:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#165c1a8804d1a65776cb965a00cf12a1f778b20e"
+      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#03d9b30546708d5ebbd7c0f9775487389e1a5192"
       dockerfile_inline: |
         FROM m.daocloud.io/docker.io/node:22-alpine
 
