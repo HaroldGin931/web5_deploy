@@ -17,7 +17,7 @@ http {
   server {
     listen 80;
 
-    location /auth/semi/ {
+    location ~ ^/(auth/semi/|callback$) {
       set $rice_upstream rice:4000;
       proxy_pass http://$rice_upstream;
       proxy_set_header Host ${PUBLIC_HOST};

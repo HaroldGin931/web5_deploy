@@ -104,12 +104,22 @@ sudo install -m 0644 demo-wamo-social.traefik.yaml \
 Semi 凭据与加密密钥配置齐全后，登录页才显示「使用 Semi 登录」。
 `GET /auth/semi/options` 只返回可用通道、测试模式和 handle 域名，不返回密钥。
 
-在服务器 `/home/ubuntu/xiangjian-demo/compose/.env` 中补充
-[.auth.env.example](.auth.env.example) 的变量；**保留现有数据库、PDS 等配置，不覆盖文件**。
-使用服务器编辑器填写，文件权限保持 `600`，不提交 Git，不放入前端 `VITE_*` 变量。
+短信、Semi、Rice 绑定加密密钥统一填写在服务器
+**`/home/ubuntu/xiangjian-demo/compose/auth.env`**；不再填基础设施的 `.env`。
+Compose 的 Rice 服务直接读取这个文件，不需要给每个密钥再加一条透传。
+新部署先 `cp -n .auth.env.example auth.env`，已有文件直接编辑，不覆盖：
+
+```bash
+cd /home/ubuntu/xiangjian-demo/compose
+nano auth.env
+chmod 600 auth.env
+```
+
+模板 [.auth.env.example](.auth.env.example) 按短信、Semi、可选邮件分组。
+真实文件已被 Git 忽略；值含 `$`、`#`、空格时用英文单引号包裹。不放入前端 `VITE_*` 变量。
 
 - **Semi**：`SEMI_CLIENT_ID`、`SEMI_CLIENT_SECRET` 是 Semi OAuth 应用凭据。
-  在 Semi 后台登记回调 **`https://demo.wamo.social/auth/semi/callback`**；部署其他域名时
+  在 Semi 后台登记回调 **`https://demo.wamo.social/callback`**；部署其他域名时
   按对应 `PUBLIC_ORIGIN` 替换。Compose 自动设置该回调和前端 `/semi-callback`，浏览器只接收
   一次性票据，由前端服务端换取 Rice/PDS 各自的会话。授权失败显示明确错误，保留来源详情。
 - **Rice 加密密钥**：`RICE_LINK_ENC_KEY` 用来加密 Semi 对应的 PDS 账号密码，
@@ -117,6 +127,7 @@ Semi 凭据与加密密钥配置齐全后，登录页才显示「使用 Semi 登
   仅全新部署、尚无绑定数据时，用 `openssl rand -base64 32` 生成后填入；不要每次部署重新生成。
 - **短信注册**：阿里云四项 `ALIYUN_SMS_ACCESS_KEY_ID`、`ALIYUN_SMS_ACCESS_KEY_SECRET`、
   `ALIYUN_SMS_SIGN_NAME`、`ALIYUN_SMS_TEMPLATE_CODE` 必須齐全；模板参数名称为 `code`。
+  `ALIYUN_SMS_ENDPOINT` 使用完整 HTTPS 地址，默认 `https://dysmsapi.aliyuncs.com`。
 - **邮箱注册**：填写 `SMTP_RELAY`、`SMTP_PORT`、`SMTP_USERNAME`、`SMTP_PASSWORD`、
   `SMTP_SENDER_ADDRESS`；使用 STARTTLS（默认 587 端口）。发送地址应是服务商验证过的地址。
   邮件和短信相互独立，只配邮件也可以注册。
@@ -127,14 +138,14 @@ Semi 凭据与加密密钥配置齐全后，登录页才显示「使用 Semi 登
 
 ```bash
 cd /home/ubuntu/xiangjian-demo/compose
-chmod 600 .env
+chmod 600 auth.env
 export PUBLIC_HOST=demo.wamo.social PUBLIC_SCHEME=https PUBLIC_ORIGIN=https://demo.wamo.social
 docker compose --env-file .env up -d --no-deps rice
-# 网关路由有变更时，先检查并加载；只改凭据无需加载网关。
-docker compose --env-file .env exec -T gateway nginx -t
-docker compose --env-file .env exec -T gateway nginx -s reload
 curl --fail --silent https://demo.wamo.social/auth/semi/options
 ```
+
+这里的 `--env-file .env` 只读取部署基础配置；`auth.env` 已由 Compose 自动加载。
+已恢复历史数据的服务器保留 `.env` 中的 `COMPOSE_FILE`，不要加 `-f compose.yml`。
 
 Mock 边界：后端 `SemiAuthControllerTest` 使用现有 Req.Test 模拟授权服务，Mox 模拟 PDS，
 验证 PKCE、错误 state、一次性票据及 Rice/PDS 身份；注册测试模拟发送通道，不打真实服务商。

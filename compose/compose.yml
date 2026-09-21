@@ -118,6 +118,9 @@ services:
     platform: linux/amd64
     build:
       context: "https://github.com/HaroldGin931/rice.git#9f04b14c12f509ae46254b723b04b413d5903698"
+    env_file:
+      - path: ./auth.env
+        required: false
     environment:
       PHX_SERVER: "true"
       PORT: 4000
@@ -130,26 +133,10 @@ services:
       PDS_HANDLE_DOMAIN: uat.test
       PDS_EMAIL_DOMAIN: pds.uat.test
       PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
-      # Credentials stay on the server; the frontend receives only availability flags.
-      SEMI_CLIENT_ID: ${SEMI_CLIENT_ID:-}
-      SEMI_CLIENT_SECRET: ${SEMI_CLIENT_SECRET:-}
-      SEMI_REDIRECT_URI: ${PUBLIC_ORIGIN}/auth/semi/callback
-      SEMI_FRONTEND_URL: ${SEMI_FRONTEND_URL:-https://www.semi.im}
-      SEMI_ISSUER: ${SEMI_ISSUER:-https://api.semi.im}
+      # Provider credentials come only from the private auth.env above.
+      SEMI_REDIRECT_URI: ${PUBLIC_ORIGIN}/callback
       HANDOFF_URL: ${PUBLIC_ORIGIN}/semi-callback
       HANDOFF_ALLOWED_ORIGIN: ${PUBLIC_ORIGIN}
-      RICE_LINK_ENC_KEY: ${RICE_LINK_ENC_KEY:-}
-      RICE_VERIFICATION_MODE: ${RICE_VERIFICATION_MODE:-live}
-      ALIYUN_SMS_ACCESS_KEY_ID: ${ALIYUN_SMS_ACCESS_KEY_ID:-}
-      ALIYUN_SMS_ACCESS_KEY_SECRET: ${ALIYUN_SMS_ACCESS_KEY_SECRET:-}
-      ALIYUN_SMS_SIGN_NAME: ${ALIYUN_SMS_SIGN_NAME:-}
-      ALIYUN_SMS_TEMPLATE_CODE: ${ALIYUN_SMS_TEMPLATE_CODE:-}
-      SMTP_RELAY: ${SMTP_RELAY:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USERNAME: ${SMTP_USERNAME:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_SENDER_NAME: ${SMTP_SENDER_NAME:-乡建DAO}
-      SMTP_SENDER_ADDRESS: ${SMTP_SENDER_ADDRESS:-}
       STORAGE_ROOT: /srv/rice/storage
       OBAN_ENABLED: "true"
       ALLOW_UAT_MOCK_SEED: ${ALLOW_UAT_MOCK_SEED:-false}
