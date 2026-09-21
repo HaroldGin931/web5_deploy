@@ -21,10 +21,11 @@ services:
     command:
       - /bin/sh
       - -c
-      - mkdir -p /rice /pds && chown -R 65534:65534 /rice && chown -R 1000:1000 /pds
+      - mkdir -p /rice /pds /cache && chown -R 65534:65534 /rice && chown -R 1000:1000 /pds /cache
     volumes:
       - rice-storage:/rice
       - pds-data:/pds
+      - appview-cache:/cache
     restart: "no"
 
   plc:
@@ -108,6 +109,8 @@ services:
         condition: service_healthy
       pds:
         condition: service_started
+      storage-init:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   rice:
@@ -197,7 +200,7 @@ services:
     image: xiangjian/frontend:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#1a63f64e4cdab46103ca3eba6ef71a6bc5b3d78e"
+      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#65b14063b3444d0cd29c7489b28a48b0baba322c"
       dockerfile_inline: |
         FROM m.daocloud.io/docker.io/node:22-alpine
 
