@@ -17,6 +17,28 @@ http {
   server {
     listen 80;
 
+    location /auth/semi/ {
+      set $rice_upstream rice:4000;
+      proxy_pass http://$rice_upstream;
+      proxy_set_header Host ${PUBLIC_HOST};
+      proxy_set_header X-Forwarded-Host ${PUBLIC_HOST};
+      proxy_set_header X-Forwarded-Proto ${PUBLIC_SCHEME};
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      # Authorization codes and handoff tickets must not enter access logs.
+      access_log off;
+      add_header Cache-Control "no-store" always;
+      add_header Referrer-Policy "no-referrer" always;
+    }
+
+    location = /semi-callback {
+      set $frontend_upstream frontend:3000;
+      proxy_pass http://$frontend_upstream;
+      proxy_set_header Host ${PUBLIC_HOST};
+      access_log off;
+      add_header Cache-Control "no-store" always;
+      add_header Referrer-Policy "no-referrer" always;
+    }
+
     location /api/ {
       set $rice_upstream rice:4000;
       proxy_pass http://$rice_upstream;
@@ -54,7 +76,7 @@ http {
       proxy_set_header Host $host;
     }
 
-    location = /bsky/xrpc/app.bsky.feed.getPostThread {
+    location ~ ^/bsky/xrpc/app\.bsky\.(feed\.getPostThread|actor\.getProfile|graph\.(getFollowers|getFollows))$ {
       limit_except GET HEAD { deny all; }
       set $appview_upstream appview:3000;
       rewrite ^/bsky/(.*)$ /$1 break;

@@ -59,15 +59,15 @@ git pull --ff-only
 ## 管理
 
 ```bash
-docker compose --env-file .env -f compose.yml ps
-docker compose --env-file .env -f compose.yml logs -f --tail=100
-docker compose --env-file .env -f compose.yml down
+docker compose --env-file .env ps
+docker compose --env-file .env logs -f --tail=100
+docker compose --env-file .env down
 ```
 
 只有需要完全重置 mock 数据时才执行：
 
 ```bash
-docker compose --env-file .env -f compose.yml down -v
+docker compose --env-file .env down -v
 ```
 
 服务器上的 gateway 只监听 `127.0.0.1:18080`。外层 Traefik 负责把
@@ -97,3 +97,61 @@ sudo install -m 0644 demo-wamo-social.traefik.yaml \
 
 安装路由文件本身会由 Traefik 热加载。若 Nomad 更换了 Traefik allocation，
 需要重新执行一次；正式持久化时应把 resolver 和同一份动态配置加入 Traefik 的部署模板。
+
+## 注册与 Semi 登录配置
+
+入口：账号密码继续使用 `/login`；可用的手机号／邮箱注册显示在 `/register`。
+Semi 凭据与加密密钥配置齐全后，登录页才显示「使用 Semi 登录」。
+`GET /auth/semi/options` 只返回可用通道、测试模式和 handle 域名，不返回密钥。
+
+在服务器 `/home/ubuntu/xiangjian-demo/compose/.env` 中补充
+[.auth.env.example](.auth.env.example) 的变量；**保留现有数据库、PDS 等配置，不覆盖文件**。
+使用服务器编辑器填写，文件权限保持 `600`，不提交 Git，不放入前端 `VITE_*` 变量。
+
+- **Semi**：`SEMI_CLIENT_ID`、`SEMI_CLIENT_SECRET` 是 Semi OAuth 应用凭据。
+  在 Semi 后台登记回调 **`https://demo.wamo.social/auth/semi/callback`**；部署其他域名时
+  按对应 `PUBLIC_ORIGIN` 替换。Compose 自动设置该回调和前端 `/semi-callback`，浏览器只接收
+  一次性票据，由前端服务端换取 Rice/PDS 各自的会话。授权失败显示明确错误，保留来源详情。
+- **Rice 加密密钥**：`RICE_LINK_ENC_KEY` 用来加密 Semi 对应的 PDS 账号密码，
+  不是 Semi 提供的 API key 或签名私钥。已有 `semi_links` 数据必须沿用原密钥并妥善备份。
+  仅全新部署、尚无绑定数据时，用 `openssl rand -base64 32` 生成后填入；不要每次部署重新生成。
+- **短信注册**：阿里云四项 `ALIYUN_SMS_ACCESS_KEY_ID`、`ALIYUN_SMS_ACCESS_KEY_SECRET`、
+  `ALIYUN_SMS_SIGN_NAME`、`ALIYUN_SMS_TEMPLATE_CODE` 必須齐全；模板参数名称为 `code`。
+- **邮箱注册**：填写 `SMTP_RELAY`、`SMTP_PORT`、`SMTP_USERNAME`、`SMTP_PASSWORD`、
+  `SMTP_SENDER_ADDRESS`；使用 STARTTLS（默认 587 端口）。发送地址应是服务商验证过的地址。
+  邮件和短信相互独立，只配邮件也可以注册。
+- **未配置时**：真实模式下未配置的通道不显示为注册选项，直接调用也返回 `503`；
+  不会把验证码打印到日志后假报「已发送」，不创建模拟登录会话。
+
+保存配置后只重建受影响服务（这里的镜像应已包含对应代码）。不运行会写入 mock 数据的 `start.sh`：
+
+```bash
+cd /home/ubuntu/xiangjian-demo/compose
+chmod 600 .env
+export PUBLIC_HOST=demo.wamo.social PUBLIC_SCHEME=https PUBLIC_ORIGIN=https://demo.wamo.social
+docker compose --env-file .env up -d --no-deps rice
+# 网关路由有变更时，先检查并加载；只改凭据无需加载网关。
+docker compose --env-file .env exec -T gateway nginx -t
+docker compose --env-file .env exec -T gateway nginx -s reload
+curl --fail --silent https://demo.wamo.social/auth/semi/options
+```
+
+Mock 边界：后端 `SemiAuthControllerTest` 使用现有 Req.Test 模拟授权服务，Mox 模拟 PDS，
+验证 PKCE、错误 state、一次性票据及 Rice/PDS 身份；注册测试模拟发送通道，不打真实服务商。
+这只能证明本地协议链路，不能证明服务商配置、短信到达或真实授权成功。
+需要手工走隔离环境验证码时才显式设置 `RICE_VERIFICATION_MODE=log`，界面会标明测试模式，
+验证码只写该服务器日志；结束后恢复 `live`。Semi 没有生产环境模拟登录开关。
+真实密钥由部署者填入后，再验收首次注册、同账号再次登录、取消授权及从详情登录返回。
+
+## 已恢复的历史 PDS 数据
+
+恢复沿用现有数据库与服务；旧活动标签仍是帖子，不进入新 Rice 任务、活动或账本。
+服务器 `.env` 的 `COMPOSE_FILE` 可包含私有恢复配置（历史 handle 的容器网络别名）。
+更新和重建请用 `docker compose --env-file .env ...`，不要用 `-f compose.yml` 绕过该配置。
+这些由账号资料生成的别名、原始备份、数据库文件和身份记录均不提交 Git。
+
+`BSKY_DB_POSTGRES_SCHEMA` 与备份的 AppView schema 一致；
+`PDS_SERVICE_HANDLE_DOMAINS` 同时保留新注册域和已恢复账号域。
+`POST_CACHE_VISITOR` / `POST_CACHE_VISITOR_PASSWORD` 是无内容的索引访客服务账号，
+与真实用户、Rice 账户和 mock 种子无关。恢复环境关闭 `ALLOW_UAT_MOCK_SEED`，
+不要运行 `start.sh` 重写测试账号或证书。

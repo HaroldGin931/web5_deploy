@@ -48,7 +48,7 @@ services:
       PDS_PORT: 3000
       PDS_HOSTNAME: pds.uat.test
       PDS_SERVICE_DID: did:web:pds.uat.test
-      PDS_SERVICE_HANDLE_DOMAINS: .uat.test
+      PDS_SERVICE_HANDLE_DOMAINS: ${PDS_SERVICE_HANDLE_DOMAINS:-.uat.test}
       PDS_DATA_DIRECTORY: /pds
       PDS_BLOBSTORE_DISK_LOCATION: /pds/blocks
       PDS_DID_PLC_URL: http://plc:3000
@@ -84,7 +84,7 @@ services:
       LOG_LEVEL: info
       BSKY_PORT: 3000
       BSKY_DB_POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/bsky
-      BSKY_DB_POSTGRES_SCHEMA: public
+      BSKY_DB_POSTGRES_SCHEMA: ${BSKY_DB_POSTGRES_SCHEMA:-public}
       BSKY_DATAPLANE_PORT: 3001
       BSKY_DATAPLANE_URLS: http://localhost:3001
       BSKY_DATAPLANE_HTTP_VERSION: "1.1"
@@ -114,7 +114,7 @@ services:
     image: xiangjian/rice:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/rice.git#e82e39370283cb88516ebde62dcc0a94bd8f5594"
+      context: "https://github.com/HaroldGin931/rice.git#9f04b14c12f509ae46254b723b04b413d5903698"
     environment:
       PHX_SERVER: "true"
       PORT: 4000
@@ -127,9 +127,29 @@ services:
       PDS_HANDLE_DOMAIN: uat.test
       PDS_EMAIL_DOMAIN: pds.uat.test
       PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
+      # Credentials stay on the server; the frontend receives only availability flags.
+      SEMI_CLIENT_ID: ${SEMI_CLIENT_ID:-}
+      SEMI_CLIENT_SECRET: ${SEMI_CLIENT_SECRET:-}
+      SEMI_REDIRECT_URI: ${PUBLIC_ORIGIN}/auth/semi/callback
+      SEMI_FRONTEND_URL: ${SEMI_FRONTEND_URL:-https://www.semi.im}
+      SEMI_ISSUER: ${SEMI_ISSUER:-https://api.semi.im}
+      HANDOFF_URL: ${PUBLIC_ORIGIN}/semi-callback
+      HANDOFF_ALLOWED_ORIGIN: ${PUBLIC_ORIGIN}
+      RICE_LINK_ENC_KEY: ${RICE_LINK_ENC_KEY:-}
+      RICE_VERIFICATION_MODE: ${RICE_VERIFICATION_MODE:-live}
+      ALIYUN_SMS_ACCESS_KEY_ID: ${ALIYUN_SMS_ACCESS_KEY_ID:-}
+      ALIYUN_SMS_ACCESS_KEY_SECRET: ${ALIYUN_SMS_ACCESS_KEY_SECRET:-}
+      ALIYUN_SMS_SIGN_NAME: ${ALIYUN_SMS_SIGN_NAME:-}
+      ALIYUN_SMS_TEMPLATE_CODE: ${ALIYUN_SMS_TEMPLATE_CODE:-}
+      SMTP_RELAY: ${SMTP_RELAY:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_SENDER_NAME: ${SMTP_SENDER_NAME:-乡建DAO}
+      SMTP_SENDER_ADDRESS: ${SMTP_SENDER_ADDRESS:-}
       STORAGE_ROOT: /srv/rice/storage
       OBAN_ENABLED: "true"
-      ALLOW_UAT_MOCK_SEED: "true"
+      ALLOW_UAT_MOCK_SEED: ${ALLOW_UAT_MOCK_SEED:-false}
       MOCK_ACCOUNT_PASSWORD: ${MOCK_ACCOUNT_PASSWORD:?missing compose/.env}
     command: ["/bin/sh", "-c", "/app/bin/migrate && exec /app/bin/server"]
     volumes:
@@ -157,9 +177,9 @@ services:
       - --password
       - ${POST_CACHE_ADMIN_PASSWORD:?missing compose/.env}
       - --visitor
-      - bob.uat.test
+      - ${POST_CACHE_VISITOR:-bob.uat.test}
       - --visitor-password
-      - ${MOCK_ACCOUNT_PASSWORD}
+      - ${POST_CACHE_VISITOR_PASSWORD:-${MOCK_ACCOUNT_PASSWORD}}
     environment:
       SSL_CERT_FILE: /certs/ca.crt
     volumes:
@@ -177,7 +197,7 @@ services:
     image: xiangjian/frontend:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#03d9b30546708d5ebbd7c0f9775487389e1a5192"
+      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#1a63f64e4cdab46103ca3eba6ef71a6bc5b3d78e"
       dockerfile_inline: |
         FROM m.daocloud.io/docker.io/node:22-alpine
 
