@@ -117,7 +117,7 @@ services:
     image: xiangjian/rice:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/rice.git#d4c3e834bded79d9ced11c98f7594aafe5a0d621"
+      context: "https://github.com/HaroldGin931/rice.git#6d5972fb6bc022f729beb280c023711c611271ee"
     env_file:
       - path: ./.auth
         required: false
@@ -187,7 +187,7 @@ services:
     image: xiangjian/frontend:demo
     platform: linux/amd64
     build:
-      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#72e84367098aa8051c2dc4ba007ecb962a05f16a"
+      context: "https://github.com/HaroldGin931/xiangjian_frontend.git#9ec115be84a68abcef1b62841ff01750b6d2004e"
       dockerfile_inline: |
         FROM m.daocloud.io/docker.io/node:22-alpine
 
